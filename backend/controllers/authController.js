@@ -37,7 +37,18 @@ const getAuthCookieOptions = () => {
 export const signup = async (req, res) => {
   try {
     // fetch values from request
-    const { name, email, password } = req.body;
+    let { name, email, password } = req.body;
+
+    if (!email) {
+      return res.status(400).json({ message: 'Email is required' });
+    }
+
+    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+    if (!emailRegex.test(email)) {
+      return res.status(400).json({ message: 'Invalid email format' });
+    }
+
+    email = email.toLowerCase();
 
     if (!name || name.trim().length < 2) {
       return res
@@ -101,7 +112,7 @@ export const signup = async (req, res) => {
 export const login = async (req, res) => {
   try {
     // fetch user data from request
-    const { email, password } = req.body;
+    let { email, password } = req.body;
 
     // check if email and password exist in request
     if (!email || !password) {
@@ -109,6 +120,8 @@ export const login = async (req, res) => {
         .status(400)
         .json({ message: 'Email and password are required' });
     }
+
+    email = email.toLowerCase();
 
     // check if user exists or not
     const user = await User.findOne({ email });
@@ -264,10 +277,12 @@ export const googleLogin = async (req, res) => {
       });
     }
 
-    const { email, name } = decodedToken;
-    if (!email) {
+    const { email: rawEmail, name } = decodedToken;
+    if (!rawEmail) {
       return res.status(400).json({ message: 'Email is missing from the Google identity token' });
     }
+
+    const email = rawEmail.toLowerCase();
 
     // Check if user already exists
     let user = await User.findOne({ email });
