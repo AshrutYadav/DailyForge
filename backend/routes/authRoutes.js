@@ -12,14 +12,10 @@ import {
 
 import { authMiddleware } from "../middlewares/authMiddleware.js";
 
-const isProduction = process.env.NODE_ENV === 'production';
-
 const authLimiter = rateLimit({
   windowMs: 15 * 60 * 1000,
-  max: isProduction ? 10 : 100,
-  message: {
-    message: 'Too many authentication attempts. Please try again later.',
-  },
+  max: process.env.AUTH_RATE_LIMIT_MAX ? parseInt(process.env.AUTH_RATE_LIMIT_MAX, 10) : 10,
+  message: "Too many authentication attempts. Please try again later.",
   standardHeaders: true,
   legacyHeaders: false,
 });
